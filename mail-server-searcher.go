@@ -39,16 +39,17 @@ func readEmails() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer file.Close()
 
-	var lines []string
+	var emails []string
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		emails = append(emails, scanner.Text())
 	}
 
-	return lines, nil
+	return emails, nil
 }
 
 func unique(emails []string) []string {
