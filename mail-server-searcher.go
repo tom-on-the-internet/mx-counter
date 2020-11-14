@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type kv struct {
@@ -96,22 +97,46 @@ func uniqueDomains(emails []string) []string {
 }
 
 func getMailDomains(domains []string) map[string]string {
+	var wg sync.WaitGroup
+
+	type result struct {
+		Key   string
+		Value string
+	}
+
+	c := make(chan result)
 	m := make(map[string]string)
 
 	for _, domain := range domains {
-		mxs, err := net.LookupMX(domain)
-		if err != nil {
-			continue
-		}
+		wg.Add(1)
 
-		minimumDomainParts := 3
+		go func(wg *sync.WaitGroup, domain string) {
+			defer wg.Done()
 
-		parts := strings.Split(mxs[0].Host, ".")
-		if len(parts) < minimumDomainParts {
-			continue
-		}
+			mxs, err := net.LookupMX(domain)
+			if err != nil {
+				return
+			}
 
-		m[domain] = parts[len(parts)-3] + "." + parts[len(parts)-2]
+			minimumDomainParts := 3
+
+			parts := strings.Split(mxs[0].Host, ".")
+			if len(parts) < minimumDomainParts {
+				return
+			}
+
+			d := parts[len(parts)-3] + "." + parts[len(parts)-2]
+			c <- result{domain, d}
+		}(&wg, domain)
+	}
+
+	go func() {
+		wg.Wait()
+		close(c)
+	}()
+
+	for r := range c {
+		m[r.Key] = r.Value
 	}
 
 	return m
@@ -123,7 +148,10 @@ func getDomainCounts(emails []string, mailDomains map[string]string) map[string]
 	for _, email := range emails {
 		domain := getDomain(email)
 		mailDomain := mailDomains[domain]
-		m[mailDomain]++
+
+		if len(mailDomain) > 0 {
+			m[mailDomain]++
+		}
 	}
 
 	return m
