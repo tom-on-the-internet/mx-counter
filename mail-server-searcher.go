@@ -40,6 +40,7 @@ func main() {
 	os.Exit(0)
 }
 
+// getReader returns a reader from a command line argument or from stdin.
 func getReader() (*os.File, error) {
 	var err error
 
@@ -55,6 +56,7 @@ func getReader() (*os.File, error) {
 	return f, nil
 }
 
+// readEmails return a slice of emails.
 func readEmails(f *os.File) ([]string, error) {
 	defer f.Close()
 
@@ -68,19 +70,20 @@ func readEmails(f *os.File) ([]string, error) {
 	return emails, nil
 }
 
-func unique(emails []string) []string {
+// unique returns only unique items from a string slice.
+func unique(items []string) []string {
 	keys := make(map[string]bool)
-	uniqueEmails := []string{}
+	unique := []string{}
 
-	for _, email := range emails {
+	for _, email := range items {
 		if _, value := keys[email]; !value {
 			keys[email] = true
 
-			uniqueEmails = append(uniqueEmails, email)
+			unique = append(unique, email)
 		}
 	}
 
-	return uniqueEmails
+	return unique
 }
 
 func valid(emails []string) []string {
