@@ -18,7 +18,12 @@ type kv struct {
 }
 
 func main() {
-	emails, err := readEmails()
+	reader, err := getReader()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	emails, err := readEmails(reader)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,17 +40,27 @@ func main() {
 	os.Exit(0)
 }
 
-func readEmails() ([]string, error) {
-	file, err := os.Open("emails.txt")
-	if err != nil {
-		return nil, err
+func getReader() (*os.File, error) {
+	var err error
+
+	f := os.Stdin
+
+	if len(os.Args) > 1 {
+		f, err = os.Open(os.Args[1])
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	defer file.Close()
+	return f, nil
+}
+
+func readEmails(f *os.File) ([]string, error) {
+	defer f.Close()
 
 	var emails []string
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		emails = append(emails, scanner.Text())
 	}
