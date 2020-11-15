@@ -35,7 +35,7 @@ func main() {
 	domainCounts := getDomainCounts(emails, mailDomains)
 	orderedCounts := getOrderedCounts(domainCounts)
 
-	render(orderedCounts)
+	output(orderedCounts)
 
 	os.Exit(0)
 }
@@ -189,7 +189,7 @@ func getOrderedCounts(domainCounts map[string]int) []kv {
 	return orderedCounts
 }
 
-func render(orderedCounts []kv) {
+func output(orderedCounts []kv) {
 	for _, count := range orderedCounts {
 		fmt.Println(count.Key, count.Value)
 	}
