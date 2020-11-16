@@ -76,7 +76,7 @@ func unique(items []string) []string {
 	unique := []string{}
 
 	for _, email := range items {
-		if _, value := keys[email]; !value {
+		if _, ok := keys[email]; !ok {
 			keys[email] = true
 
 			unique = append(unique, email)
