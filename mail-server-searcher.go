@@ -28,6 +28,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	reader.Close()
+
 	emails = unique(emails)
 	emails = valid(emails)
 	domains := uniqueDomains(emails)
@@ -58,8 +60,6 @@ func getReader() (*os.File, error) {
 
 // readEmails return a slice of emails.
 func readEmails(f *os.File) ([]string, error) {
-	defer f.Close()
-
 	var emails []string
 
 	scanner := bufio.NewScanner(f)
