@@ -51,7 +51,6 @@ func act() error {
 	return nil
 }
 
-// getReadCloser returns a reader from a command line argument or from stdin.
 func getReadCloser() (io.ReadCloser, error) {
 	var err error
 
@@ -67,7 +66,6 @@ func getReadCloser() (io.ReadCloser, error) {
 	return file, nil
 }
 
-// readEmails return a slice of emails.
 func readEmails(r io.Reader) ([]string, error) {
 	var emails []string
 
@@ -76,10 +74,13 @@ func readEmails(r io.Reader) ([]string, error) {
 		emails = append(emails, scanner.Text())
 	}
 
+	if err := scanner.Err(); err != nil {
+		return emails, err
+	}
+
 	return emails, nil
 }
 
-// unique returns only unique items from a string slice.
 func unique(items []string) []string {
 	keys := make(map[string]bool)
 	unique := []string{}
