@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
+	"io"
 	"net"
 	"os"
 	"regexp"
@@ -18,17 +18,26 @@ type kv struct {
 }
 
 func main() {
-	reader, err := getReader()
+	err := act()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	emails, err := readEmails(reader)
+	os.Exit(0)
+}
+
+func act() error {
+	r, err := getReadCloser()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	reader.Close()
+	defer r.Close()
+
+	emails, err := readEmails(r)
+	if err != nil {
+		return err
+	}
 
 	emails = unique(emails)
 	emails = valid(emails)
@@ -39,30 +48,30 @@ func main() {
 
 	output(orderedCounts)
 
-	os.Exit(0)
+	return nil
 }
 
-// getReader returns a reader from a command line argument or from stdin.
-func getReader() (*os.File, error) {
+// getReadCloser returns a reader from a command line argument or from stdin.
+func getReadCloser() (io.ReadCloser, error) {
 	var err error
 
-	f := os.Stdin
+	file := os.Stdin
 
 	if len(os.Args) > 1 {
-		f, err = os.Open(os.Args[1])
+		file, err = os.Open(os.Args[1])
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return f, nil
+	return file, nil
 }
 
 // readEmails return a slice of emails.
-func readEmails(f *os.File) ([]string, error) {
+func readEmails(r io.Reader) ([]string, error) {
 	var emails []string
 
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		emails = append(emails, scanner.Text())
 	}
