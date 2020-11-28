@@ -153,8 +153,8 @@ func getMailDomains(domains []string) map[string]string {
 				return
 			}
 
-			d := parts[len(parts)-3] + "." + parts[len(parts)-2]
-			c <- result{domain, d}
+			mailDomain := parts[len(parts)-3] + "." + parts[len(parts)-2]
+			c <- result{domain, mailDomain}
 		}(&wg, domain)
 	}
 
