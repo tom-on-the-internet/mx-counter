@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -11,6 +12,8 @@ import (
 	"strings"
 	"sync"
 )
+
+var invalidEmailErr = errors.New("invalid email")
 
 type kv struct {
 	Key   string
@@ -41,9 +44,19 @@ func act() error {
 
 	emails = unique(emails)
 	emails = valid(emails)
-	domains := uniqueDomains(emails)
+
+	domains, err := uniqueDomains(emails)
+	if err != nil {
+		return err
+	}
+
 	mailDomains := getMailDomains(domains)
-	domainCounts := getDomainCounts(emails, mailDomains)
+
+	domainCounts, err := getDomainCounts(emails, mailDomains)
+	if err != nil {
+		return err
+	}
+
 	orderedCounts := getOrderedCounts(domainCounts)
 
 	output(orderedCounts)
@@ -110,18 +123,29 @@ func valid(emails []string) []string {
 	return validEmails
 }
 
-func getDomain(email string) string {
-	return strings.Split(email, "@")[1]
+func getDomain(email string) (string, error) {
+	segments := strings.Split(email, "@")
+
+	if len(segments) < 2 {
+		return "", invalidEmailErr
+	}
+
+	return segments[1], nil
 }
 
-func uniqueDomains(emails []string) []string {
+func uniqueDomains(emails []string) ([]string, error) {
 	domains := make([]string, len(emails))
 
 	for i, email := range emails {
-		domains[i] = getDomain(email)
+		domain, err := getDomain(email)
+		if err != nil {
+			return domains, err
+		}
+
+		domains[i] = domain
 	}
 
-	return unique(domains)
+	return unique(domains), nil
 }
 
 func getMailDomains(domains []string) map[string]string {
@@ -170,11 +194,14 @@ func getMailDomains(domains []string) map[string]string {
 	return m
 }
 
-func getDomainCounts(emails []string, mailDomains map[string]string) map[string]int {
+func getDomainCounts(emails []string, mailDomains map[string]string) (map[string]int, error) {
 	m := make(map[string]int)
 
 	for _, email := range emails {
-		domain := getDomain(email)
+		domain, err := getDomain(email)
+		if err != nil {
+			return m, err
+		}
 		mailDomain := mailDomains[domain]
 
 		if len(mailDomain) > 0 {
@@ -182,7 +209,7 @@ func getDomainCounts(emails []string, mailDomains map[string]string) map[string]
 		}
 	}
 
-	return m
+	return m, nil
 }
 
 func getOrderedCounts(domainCounts map[string]int) []kv {
