@@ -82,3 +82,24 @@ func TestUniqueDomains(t *testing.T) {
 		})
 	}
 }
+
+func TestGetOrderedCounts(t *testing.T) {
+	tests := map[string]struct {
+		input map[string]int
+		want  []kv
+	}{
+		"simple":       {input: map[string]int{"google.com": 3, "yahoo.ca": 4}, want: []kv{{Key: "yahoo.ca", Value: 4}, {Key: "google.com", Value: 3}}},
+		"removes zero": {input: map[string]int{"google.com": 3, "yahoo.ca": 0}, want: []kv{{Key: "google.com", Value: 3}}},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := getOrderedCounts(tc.input)
+			diff := cmp.Diff(tc.want, got)
+
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}

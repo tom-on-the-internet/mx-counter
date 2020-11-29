@@ -216,7 +216,9 @@ func getOrderedCounts(domainCounts map[string]int) []kv {
 	orderedCounts := make([]kv, 0, len(domainCounts))
 
 	for k, v := range domainCounts {
-		orderedCounts = append(orderedCounts, kv{k, v})
+		if v > 0 {
+			orderedCounts = append(orderedCounts, kv{k, v})
+		}
 	}
 
 	sort.Slice(orderedCounts, func(i, j int) bool {
