@@ -202,6 +202,7 @@ func getDomainCounts(emails []string, mailDomains map[string]string) (map[string
 		if err != nil {
 			return m, err
 		}
+
 		mailDomain := mailDomains[domain]
 
 		if len(mailDomain) > 0 {

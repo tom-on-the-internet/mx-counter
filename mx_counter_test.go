@@ -103,3 +103,53 @@ func TestGetOrderedCounts(t *testing.T) {
 		})
 	}
 }
+
+func TestValid(t *testing.T) {
+	tests := map[string]struct {
+		input []string
+		want  []string
+	}{
+		"simple":               {input: []string{"test@test.com"}, want: []string{"test@test.com"}},
+		"removes invalid":      {input: []string{"test@test.com", "invalid"}, want: []string{"test@test.com"}},
+		"allows simple domain": {input: []string{"test@test"}, want: []string{"test@test"}},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := valid(tc.input)
+			diff := cmp.Diff(tc.want, got)
+
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
+
+func TestGetDomainsCount(t *testing.T) {
+	tests := map[string]struct {
+		emails      []string
+		mailDomains map[string]string
+		want        map[string]int
+		err         error
+	}{
+		"simple":                  {emails: []string{"test@gmail.com"}, mailDomains: map[string]string{"gmail.com": "google.com"}, want: map[string]int{"google.com": 1}},
+		"duplicates":              {emails: []string{"test@gmail.com", "other@gmail.com", "test@yahoo.com"}, mailDomains: map[string]string{"gmail.com": "google.com", "yahoo.com": "yahoodns.com"}, want: map[string]int{"google.com": 2, "yahoodns.com": 1}},
+		"errors on invalid email": {emails: []string{"test"}, mailDomains: map[string]string{"gmail.com": "google.com", "yahoo.com": "yahoodns.com"}, err: invalidEmailErr},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := getDomainCounts(tc.emails, tc.mailDomains)
+			diff := cmp.Diff(tc.want, got)
+
+			if err != tc.err {
+				t.Fatalf(err.Error())
+			}
+
+			if err == nil && diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
