@@ -6,7 +6,7 @@ Get a count of mail domains from an email list.
 
 Given
 
-```
+```txt
 tom@tomontheinternet.com
 jane@yahoo.ca
 joe@gmail.com
@@ -17,7 +17,7 @@ rory@microsoft.com
 
 Outputs
 
-```
+```txt
 google.com 4
 yahoodns.net 1
 outlook.com 1
@@ -31,4 +31,4 @@ From a file:
 
 From stdin:
 
-`cat emails.txt | mx-counter`:w
+`cat emails.txt | mx-counter`
